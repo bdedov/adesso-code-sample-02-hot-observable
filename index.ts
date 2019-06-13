@@ -1,4 +1,4 @@
-import { Observable, PartialObserver, ConnectableObservable } from 'rxjs';
+import { Observable, PartialObserver, ConnectableObservable, Subscription } from 'rxjs';
 import { publish } from 'rxjs/operators';
 
 class BingoNumberProducer {
@@ -10,6 +10,7 @@ class BingoNumberProducer {
 
   public generateNextNumber() {
     const nextBingoNr: number = Math.ceil(Math.random() * 1000) % 75 + 1;
+    console.log(`[Generator] ${nextBingoNr}`)
     this.callbacks.forEach(callback => callback(nextBingoNr));
   }
 }
@@ -32,5 +33,13 @@ const playerBObserver: PartialObserver<number> = {
   complete() { /* noop */ }
 };
 
-bingoObservable$.subscribe(playerAObserver);
-bingoObservable$.subscribe(playerBObserver);
+let playerASubscriptions: Subscription[] = [];
+let playerBSubscriptions: Subscription[] = [];
+
+document.getElementById('subscribePlayerABtn').addEventListener('click', () =>  playerASubscriptions.push(bingoObservable$.subscribe(playerAObserver)));
+
+document.getElementById('unsubscribePlayerABtn').addEventListener('click', () => (playerASubscriptions.pop() || { unsubscribe: () => ({}) }).unsubscribe());
+
+document.getElementById('subscribePlayerBBtn').addEventListener('click', () =>  playerBSubscriptions.push(bingoObservable$.subscribe(playerBObserver)));
+
+document.getElementById('unsubscribePlayerBBtn').addEventListener('click', () => (playerBSubscriptions.pop() || { unsubscribe: () => ({}) }).unsubscribe());
